@@ -11,6 +11,11 @@
 
     formatter = pkgs.alejandra;
 
+    jj-fix.tools.alejandra = {
+      command = ["alejandra" "--quiet" "-"];
+      patterns = ["glob:**/*.nix"];
+    };
+
     checks.alejandra = pkgs.stdenvNoCC.mkDerivation {
       name = "alejandra-check";
       src = nixSource;
