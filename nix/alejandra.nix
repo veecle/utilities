@@ -12,7 +12,7 @@
     formatter = pkgs.alejandra;
 
     checks.alejandra = pkgs.stdenvNoCC.mkDerivation {
-      name = "alejandra";
+      name = "alejandra-check";
       src = nixSource;
       nativeBuildInputs = [pkgs.alejandra];
       buildPhase = "alejandra --check .";
