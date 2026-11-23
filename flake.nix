@@ -19,12 +19,25 @@
     flake-parts,
     make-shell,
     ...
-  }:
+  }: let
+    # Modules for other flake-parts based repositories to import.
+    # Bound here rather than referenced via `self` so they can also be imported below, as `imports` can't depend on the flake's outputs.
+    flakeModules = {
+      setup-jj-fix = ./nix/setup-jj-fix.nix;
+      # Imports all the other modules. Also required because flake-parts aliases `flake.flakeModule` to this,
+      # so evaluating all outputs (e.g. `nix flake show`) fails without it.
+      default.imports = builtins.attrValues (builtins.removeAttrs flakeModules ["default"]);
+    };
+  in
     flake-parts.lib.mkFlake {inherit inputs;} {
       imports = [
+        flake-parts.flakeModules.flakeModules
         make-shell.flakeModules.default
         ./nix/alejandra.nix
+        flakeModules.default
       ];
+
+      flake = {inherit flakeModules;};
 
       # Instead of each module having to use some number of `../`'s to reference the repository root,
       # pass down a nix path they can construct sources from.
