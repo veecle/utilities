@@ -29,11 +29,15 @@ Add this repository as a flake input and import the `default` module:
         inputs.veecle-utilities.flakeModules.default
       ];
 
-      # Used by the modules to construct check sources.
       _module.args.root = ./.;
     };
 }
 ```
+
+All modules may rely on the importing flake to:
+
+- Import [`make-shell`](https://github.com/nicknovitski/make-shell)'s flake module, so they can add tools to `make-shells.default`.
+- Set `_module.args.root` to the repository root (e.g. `_module.args.root = ./.;`), so they can construct sources, such as for checks, from the repository's files.
 
 ### `setup-jj-fix`
 
@@ -52,11 +56,21 @@ It adds:
 - Both tools in `make-shells.default`, so `mdslw --mode=format .` and `mdslw-rust .` reformat from the devshell.
 - Both tools as `jj-fix.tools`, importing `setup-jj-fix` as well.
 
-It requires the importing flake to import [`make-shell`](https://github.com/nicknovitski/make-shell)'s flake module, and to set `_module.args.root` to the repository root (e.g. `_module.args.root = ./.;`) for the checks' sources.
 Both tools default to the shared config in [`nix/mdslw/defaults.toml`](nix/mdslw/defaults.toml).
 `.mdslw.toml` files in the repository are merged on top of it, so they only need the settings that differ.
 
 The tools are also available as `packages.<system>.mdslw` and `packages.<system>.mdslw-rust`.
+
+### `nix-lint`
+
+Formats Nix files with [`alejandra`](https://github.com/kamadorueda/alejandra) and lints them for unused code with [`deadnix`](https://github.com/astro/deadnix).
+It adds:
+
+- `checks.alejandra` and `checks.deadnix`, covering all `*.nix` files of the repository, only added if the repository has such files.
+- `formatter` as `alejandra`, where a bare `nix fmt` formats the whole repository.
+  It is only a default, so the importing flake can define its own `formatter` instead, e.g. a multi-language one.
+- Both tools in `make-shells.default`.
+- `alejandra` as a `jj-fix.tools` entry, importing `setup-jj-fix` as well.
 
 ## Development
 
