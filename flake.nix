@@ -24,6 +24,7 @@
     # Bound here rather than referenced via `self` so they can also be imported below, as `imports` can't depend on the flake's outputs.
     flakeModules = {
       setup-jj-fix = ./nix/setup-jj-fix.nix;
+      mdslw = ./nix/mdslw;
       # Imports all the other modules. Also required because flake-parts aliases `flake.flakeModule` to this,
       # so evaluating all outputs (e.g. `nix flake show`) fails without it.
       default.imports = builtins.attrValues (builtins.removeAttrs flakeModules ["default"]);
@@ -38,6 +39,13 @@
       ];
 
       flake = {inherit flakeModules;};
+
+      perSystem = {pkgs, ...}: {
+        packages = rec {
+          mdslw = pkgs.callPackage ./nix/mdslw/mdslw.nix {};
+          mdslw-rust = pkgs.callPackage ./nix/mdslw/mdslw-rust.nix {inherit mdslw;};
+        };
+      };
 
       # Instead of each module having to use some number of `../`'s to reference the repository root,
       # pass down a nix path they can construct sources from.
